@@ -1,5 +1,3 @@
-#![allow(dead_code, unused_variables)]
-
 use super::types::Token;
 
 pub fn validate_json(tokens: Vec<Token>) -> bool {
@@ -16,7 +14,7 @@ fn value(tokens: &[Token]) -> (bool, usize) {
         None => (false, 0),
         Some(token) => match token {
             Token::String(_) => (true, 1),
-            Token::Number => (true, 1),
+            Token::Number(_) => (true, 1),
             Token::True => (true, 1),
             Token::False => (true, 1),
             Token::Null => (true, 1),
@@ -160,7 +158,7 @@ mod tests {
 
     #[test]
     fn accepts_number() {
-        let tokens = vec![Number];
+        let tokens = vec![Number(0.0)];
         assert!(validate_json(tokens));
     }
 
@@ -218,7 +216,7 @@ mod tests {
             Punct('['),
             String("".to_owned()),
             Punct(','),
-            Number,
+            Number(0.0),
             Punct(','),
             Null,
             Punct(']'),
@@ -283,7 +281,7 @@ mod tests {
             Punct(','),
             String("".to_owned()),
             Punct(':'),
-            Number,
+            Number(0.0),
             Punct(','),
             String("".to_owned()),
             Punct(':'),
