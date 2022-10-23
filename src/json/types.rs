@@ -1,5 +1,7 @@
 use std::{collections::HashMap, fmt::Display};
 
+use colored::Colorize;
+
 /// An enumeration of tokens that may appear within JSON
 /// text. The tokens contain information that is relevant
 /// to each variant.
@@ -35,6 +37,9 @@ impl Value {
     // @todo: Consider adding color
     // @todo: Decide whether to add
     //        additional methods to improve ease of use
+
+    const INDENT_SIZE: usize = 2;
+
     fn display(value: &Value, depth: usize) -> String {
         match value {
             Value::String(string) => Value::display_string(string),
@@ -47,7 +52,7 @@ impl Value {
     }
 
     fn display_string(string: &str) -> String {
-        format!(r#""{}""#, string)
+        format!(r#""{}""#, string).green().to_string()
     }
 
     fn display_number(number: &f64) -> String {
@@ -66,13 +71,13 @@ impl Value {
         format!(
             "{{{newline}{members}{newline}{indent}}}",
             newline = if !object.is_empty() { "\n" } else { "" },
-            indent = " ".repeat(4).repeat(depth),
+            indent = " ".repeat(Value::INDENT_SIZE).repeat(depth),
             members = object
                 .iter()
                 .map(|member| format!(
-                    r#"{indent}"{key}" : {value}"#,
-                    indent = " ".repeat(4).repeat(depth + 1),
-                    key = member.0,
+                    r#"{indent}{key}: {value}"#,
+                    indent = " ".repeat(Value::INDENT_SIZE).repeat(depth + 1),
+                    key = format!(r#""{}""#, member.0).blue(),
                     value = Value::display(member.1, depth + 1)
                 ))
                 .collect::<Vec<_>>()
@@ -84,12 +89,12 @@ impl Value {
         format!(
             "[{newline}{values}{newline}{indent}]",
             newline = if !array.is_empty() { "\n" } else { "" },
-            indent = " ".repeat(4).repeat(depth),
+            indent = " ".repeat(Value::INDENT_SIZE).repeat(depth),
             values = array
                 .iter()
                 .map(|value| format!(
                     "{indent}{value}",
-                    indent = " ".repeat(4).repeat(depth + 1),
+                    indent = " ".repeat(Value::INDENT_SIZE).repeat(depth + 1),
                     value = Value::display(value, depth + 1)
                 ))
                 .collect::<Vec<_>>()
