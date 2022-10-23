@@ -32,7 +32,6 @@ pub enum Value {
 }
 
 impl Value {
-    // @todo: Review implementation
     // @todo: Consider adding color
     // @todo: Decide whether to add
     //        additional methods to improve ease of use
@@ -40,33 +39,64 @@ impl Value {
     //        the ordering is
     fn display(value: &Value, depth: usize) -> String {
         match value {
-            Value::String(string) => format!(r#""{}""#, string),
-            Value::Number(number) => number.to_string(),
-            Value::Boolean(bool) => bool.to_string(),
-            Value::Null => "null".to_string(),
-            Value::Object(object) => format!(
-                "{{\n{}\n{}}}",
-                object
-                    .iter()
-                    .map(|member| format!(
-                        r#"{}"{}" : {}"#,
-                        "    ".repeat(depth + 1),
-                        member.0,
-                        Value::display(member.1, depth + 1)
-                    ))
-                    .collect::<Vec<String>>()
-                    .join(",\n"),
-                "    ".repeat(depth)
-            ),
-            Value::Array(array) => format!(
-                "[ {} ]",
-                array
-                    .iter()
-                    .map(|element| Value::display(element, depth))
-                    .collect::<Vec<String>>()
-                    .join(", ")
-            ),
+            Value::String(string) => Value::display_string(string),
+            Value::Number(number) => Value::display_number(number),
+            Value::Boolean(bool) => Value::display_bool(bool),
+            Value::Object(object) => Value::display_object(object, depth),
+            Value::Array(array) => Value::display_array(array, depth),
+            Value::Null => Value::display_null(),
         }
+    }
+
+    fn display_string(string: &str) -> String {
+        format!(r#""{}""#, string)
+    }
+
+    fn display_number(number: &f64) -> String {
+        number.to_string()
+    }
+
+    fn display_bool(bool: &bool) -> String {
+        bool.to_string()
+    }
+
+    fn display_null() -> String {
+        "null".to_string()
+    }
+
+    fn display_object(object: &HashMap<String, Value>, depth: usize) -> String {
+        format!(
+            "{{{newline}{members}{newline}{indent}}}",
+            newline = if !object.is_empty() { "\n" } else { "" },
+            indent = " ".repeat(4).repeat(depth),
+            members = object
+                .iter()
+                .map(|member| format!(
+                    r#"{indent}"{key}" : {value}"#,
+                    indent = " ".repeat(4).repeat(depth + 1),
+                    key = member.0,
+                    value = Value::display(member.1, depth + 1)
+                ))
+                .collect::<Vec<_>>()
+                .join(",\n"),
+        )
+    }
+
+    fn display_array(array: &[Value], depth: usize) -> String {
+        format!(
+            "[{newline}{values}{newline}{indent}]",
+            newline = if !array.is_empty() { "\n" } else { "" },
+            indent = " ".repeat(4).repeat(depth),
+            values = array
+                .iter()
+                .map(|value| format!(
+                    "{indent}{value}",
+                    indent = " ".repeat(4).repeat(depth + 1),
+                    value = Value::display(value, depth + 1)
+                ))
+                .collect::<Vec<_>>()
+                .join(",\n")
+        )
     }
 }
 
