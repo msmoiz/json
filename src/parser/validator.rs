@@ -1,6 +1,13 @@
-use super::types::Token;
+use super::{tokenizer::tokenize_text, types::Token};
 
-pub fn validate_json(tokens: Vec<Token>) -> bool {
+pub fn validate_json_text(text: &str) -> bool {
+    match tokenize_text(text) {
+        Ok(tokens) => validate_json(tokens),
+        Err(_) => false,
+    }
+}
+
+fn validate_json(tokens: Vec<Token>) -> bool {
     let json = json(&tokens);
     json.0 && json.1 == tokens.len()
 }
@@ -28,13 +35,15 @@ fn value(tokens: &[Token]) -> (bool, usize) {
 }
 
 fn object(tokens: &[Token]) -> (bool, usize) {
-    let begins_with_open_brace = tokens
-        .get(0)
-        .map_or(false, |token| matches!(token, Token::Punct('{')));
+    let begins_with_open_brace = tokens.get(0).map_or(
+        false,
+        |token| matches!(token, Token::Punct(char) if char == &'{'),
+    );
 
-    let followed_by_close_brace = tokens
-        .get(1)
-        .map_or(false, |token| matches!(token, Token::Punct('}')));
+    let followed_by_close_brace = tokens.get(1).map_or(
+        false,
+        |token| matches!(token, Token::Punct(char) if char == &'}'),
+    );
 
     if begins_with_open_brace && followed_by_close_brace {
         return (true, 2);
@@ -42,9 +51,11 @@ fn object(tokens: &[Token]) -> (bool, usize) {
 
     if begins_with_open_brace {
         let members = members(&tokens[1..]);
-        let followed_by_close_brace = tokens
-            .get(members.1 + 1)
-            .map_or(false, |token| matches!(token, Token::Punct('}')));
+
+        let followed_by_close_brace = tokens.get(members.1 + 1).map_or(
+            false,
+            |token| matches!(token, Token::Punct(char) if char == &'}'),
+        );
         return (members.0 && followed_by_close_brace, members.1 + 2);
     }
 
@@ -57,9 +68,10 @@ fn members(tokens: &[Token]) -> (bool, usize) {
         return (false, 0);
     }
 
-    let followed_by_comma = tokens
-        .get(member.1)
-        .map_or(false, |token| matches!(token, Token::Punct(',')));
+    let followed_by_comma = tokens.get(member.1).map_or(
+        false,
+        |token| matches!(token, Token::Punct(char) if char == &','),
+    );
 
     if !followed_by_comma {
         return member;
@@ -78,36 +90,42 @@ fn member(tokens: &[Token]) -> (bool, usize) {
         .get(0)
         .map_or(false, |token| matches!(token, Token::String(_)));
 
-    let followed_by_colon = tokens
-        .get(1)
-        .map_or(false, |token| matches!(token, Token::Punct(':')));
+    let followed_by_colon = tokens.get(1).map_or(
+        false,
+        |token| matches!(token, Token::Punct(char) if char == &':'),
+    );
 
-    let element = element(&tokens[2..]);
-    if begins_with_string && followed_by_colon && element.0 {
-        return (true, element.1 + 2);
+    if begins_with_string && followed_by_colon {
+        let element = element(&tokens[2..]);
+        if element.0 {
+            return (true, element.1 + 2);
+        }
     }
 
     (false, 0)
 }
 
 fn array(tokens: &[Token]) -> (bool, usize) {
-    let begins_with_open_brace = tokens
-        .get(0)
-        .map_or(false, |token| matches!(token, Token::Punct('[')));
+    let begins_with_open_bracket = tokens.get(0).map_or(
+        false,
+        |token| matches!(token, Token::Punct(char) if char == &'['),
+    );
 
-    let followed_by_close_brace = tokens
-        .get(1)
-        .map_or(false, |token| matches!(token, Token::Punct(']')));
+    let followed_by_close_bracket = tokens.get(1).map_or(
+        false,
+        |token| matches!(token, Token::Punct(char) if char == &']'),
+    );
 
-    if begins_with_open_brace && followed_by_close_brace {
+    if begins_with_open_bracket && followed_by_close_bracket {
         return (true, 2);
     }
 
-    if begins_with_open_brace {
+    if begins_with_open_bracket {
         let elements = elements(&tokens[1..]);
-        let followed_by_close_brace = tokens
-            .get(elements.1 + 1)
-            .map_or(false, |token| matches!(token, Token::Punct(']')));
+        let followed_by_close_brace = tokens.get(elements.1 + 1).map_or(
+            false,
+            |token| matches!(token, Token::Punct(char) if char == &']'),
+        );
         return (elements.0 && followed_by_close_brace, elements.1 + 2);
     }
 
@@ -120,9 +138,10 @@ fn elements(tokens: &[Token]) -> (bool, usize) {
         return (false, 0);
     }
 
-    let followed_by_comma = tokens
-        .get(element.1)
-        .map_or(false, |token| matches!(token, Token::Punct(',')));
+    let followed_by_comma = tokens.get(element.1).map_or(
+        false,
+        |token| matches!(token, Token::Punct(char) if char == &','),
+    );
 
     if !followed_by_comma {
         return element;
