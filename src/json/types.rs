@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 /// An enumeration of tokens that may appear within JSON
 /// text. The tokens contain information that is relevant
@@ -29,4 +29,49 @@ pub enum Value {
     Null,
     Object(HashMap<String, Value>),
     Array(Vec<Value>),
+}
+
+impl Value {
+    // @todo: Review implementation
+    // @todo: Consider adding color
+    // @todo: Decide whether to add
+    //        additional methods to improve ease of use
+    // @todo: Figure out what the right way to handle
+    //        the ordering is
+    fn display(value: &Value, depth: usize) -> String {
+        match value {
+            Value::String(string) => format!(r#""{}""#, string),
+            Value::Number(number) => number.to_string(),
+            Value::Boolean(bool) => bool.to_string(),
+            Value::Null => "null".to_string(),
+            Value::Object(object) => format!(
+                "{{\n{}\n{}}}",
+                object
+                    .iter()
+                    .map(|member| format!(
+                        r#"{}"{}" : {}"#,
+                        "    ".repeat(depth + 1),
+                        member.0,
+                        Value::display(member.1, depth + 1)
+                    ))
+                    .collect::<Vec<String>>()
+                    .join(",\n"),
+                "    ".repeat(depth)
+            ),
+            Value::Array(array) => format!(
+                "[ {} ]",
+                array
+                    .iter()
+                    .map(|element| Value::display(element, depth))
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            ),
+        }
+    }
+}
+
+impl Display for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", Value::display(self, 0))
+    }
 }
