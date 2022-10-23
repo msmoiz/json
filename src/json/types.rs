@@ -34,7 +34,6 @@ pub enum Value {
 }
 
 impl Value {
-    // @todo: Consider adding color
     // @todo: Decide whether to add
     //        additional methods to improve ease of use
 

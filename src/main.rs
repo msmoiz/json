@@ -1,19 +1,14 @@
-use std::env;
+use std::io::{stdin, Read};
 
 mod json;
 
 fn main() {
-    // @todo: Implement piping support
-
-    let args: Vec<String> = env::args().collect();
-
-    let text = args.get(1);
-    if text.is_none() {
-        println!("No input text provided.");
-        return;
+    let mut text = String::new();
+    if stdin().read_to_string(&mut text).is_err() {
+        println!("Input text does not contain valid UTF-8.");
     }
 
-    match json::parse(text.unwrap()) {
+    match json::parse(&text) {
         Err(_) => println!("Input text does not contain valid JSON."),
         Ok(value) => println!("{}", value),
     }
