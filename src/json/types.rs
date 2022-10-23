@@ -35,8 +35,6 @@ impl Value {
     // @todo: Consider adding color
     // @todo: Decide whether to add
     //        additional methods to improve ease of use
-    // @todo: Figure out what the right way to handle
-    //        the ordering is
     fn display(value: &Value, depth: usize) -> String {
         match value {
             Value::String(string) => Value::display_string(string),
