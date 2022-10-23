@@ -64,7 +64,7 @@ impl Value {
     }
 
     fn display_null() -> String {
-        "null".to_string()
+        "null".dimmed().to_string()
     }
 
     fn display_object(object: &HashMap<String, Value>, depth: usize) -> String {
