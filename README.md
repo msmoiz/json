@@ -1,6 +1,6 @@
 # JSON
 
-This is a simple command line JSON parser that parses JSON from standard input
+This is a simple command line JSON parser that reads JSON from standard input
 and prints it out with agreeable formatting. The following snippet demonstrates
 usage of the tool.
 
