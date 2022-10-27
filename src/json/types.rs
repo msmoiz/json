@@ -34,9 +34,6 @@ pub enum Value {
 }
 
 impl Value {
-    // @todo: Decide whether to add
-    //        additional methods to improve ease of use
-
     const INDENT_SIZE: usize = 2;
 
     fn display(value: &Value, depth: usize) -> String {
